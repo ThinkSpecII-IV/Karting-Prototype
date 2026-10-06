@@ -1,0 +1,37 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": "dist/server",
+    "rootDir": ".",
+    "types": ["node"],
+    "tsBuildInfoFile": ".cache/.tsbuildinfo.server"
+  },
+  "include": [
+    "server/**/*.ts",
+    "src/core/**/*.ts",
+    "src/math/**/*.ts",
+    "src/physics/**/*.ts",
+    "src/vehicle/**/*.ts",
+    "src/track/**/*.ts",
+    "src/race/**/*.ts",
+    "src/network/**/*.ts",
+    "src/shared/**/*.ts",
+    "src/ai/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".cache",
+    "src/client/**/*",
+    "src/proxy/**/*",
+    "src/debug/**/*",
+    "src/ui/**/*",
+    "src/audio/**/*",
+    "src/assets/**/*",
+    "tests/**/*"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "types": ["vitest/globals", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["src/shared/*"],
+      "@math/*": ["src/math/*"],
+      "@physics/*": ["src/physics/*"],
+      "@vehicle/*": ["src/vehicle/*"],
+      "@track/*": ["src/track/*"],
+      "@race/*": ["src/race/*"],
+      "@network/*": ["src/network/*"],
+      "@debug/*": ["src/debug/*"],
+      "@proxy/*": ["src/proxy/*"],
+      "@ui/*": ["src/ui/*"],
+      "@audio/*": ["src/audio/*"],
+      "@assets/*": ["src/assets/*"],
+      "@core/*": ["src/core/*"]
+    },
+    "tsBuildInfoFile": ".cache/.tsbuildinfo.test"
+  },
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "server/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".cache"
+  ]
+}

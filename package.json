@@ -1,0 +1,37 @@
+{
+  "name": "karting-prototype",
+  "version": "0.1.0",
+  "description": "Browser-based multiplayer kart racing game with server-authoritative physics",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build:server": "tsc --project tsconfig.server.json",
+    "build:client": "esbuild src/client/ClientApp.ts --bundle --outfile=dist/client/bundle.js --tsconfig=tsconfig.client.json --sourcemap --platform=browser",
+    "build": "npm run build:server && npm run build:client",
+    "start:server": "node dist/server/index.js",
+    "dev:server": "tsx watch server/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "typecheck:server": "tsc --project tsconfig.server.json --noEmit",
+    "typecheck:client": "tsc --project tsconfig.client.json --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "qrcode": "1.5.3",
+    "socket.io": "4.7.5",
+    "socket.io-client": "4.7.5"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.9",
+    "@types/qrcode": "1.5.5",
+    "@vitest/coverage-v8": "1.6.0",
+    "esbuild": "0.21.5",
+    "tsx": "4.16.2",
+    "typescript": "5.5.3",
+    "vitest": "1.6.0"
+  }
+}
