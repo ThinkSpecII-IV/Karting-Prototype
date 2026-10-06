@@ -28,7 +28,6 @@ import {
   resolveSphereCollision,
   clampToWorldBounds,
   WALL_RESTITUTION,
-  KART_RESTITUTION,
 } from "../../src/physics/BoundingSphere.js";
 
 import {
