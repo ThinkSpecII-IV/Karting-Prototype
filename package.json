@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build:server": "tsc --project tsconfig.server.json",
-    "build:client": "esbuild src/client/ClientApp.ts --bundle --outfile=dist/client/bundle.js --tsconfig=tsconfig.client.json --sourcemap --platform=browser",
+    "build:client": "esbuild src/client/client_main.ts --bundle --outfile=public/bundle.js --tsconfig=tsconfig.client.json --sourcemap --platform=browser",
     "build": "npm run build:server && npm run build:client",
     "start:server": "node dist/server/index.js",
     "dev:server": "tsx watch server/index.ts",

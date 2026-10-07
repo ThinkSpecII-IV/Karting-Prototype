@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>KARTING — F1 2002 INTERFACE</title>
+    <style>
+      :root {
+        --navy: #050814;
+        --panel: rgba(6, 12, 32, 0.92);
+        --gold: #f0c400;
+        --cyan: #6ee0ff;
+        --red: #e02424;
+        --line: #8a9bb8;
+        --text: #f4f6fb;
+      }
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: var(--navy);
+        color: var(--text);
+        font-family: "Courier New", Courier, monospace;
+        overflow: hidden;
+        user-select: none;
+      }
+      #race-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, rgba(5,8,20,0.92), rgba(5,8,20,0.72));
+        z-index: 4;
+      }
+      .overlay[hidden], #touch-hud[hidden] { display: none !important; }
+      .sheet {
+        width: min(460px, calc(100vw - 24px));
+        background: var(--panel);
+        border: 2px solid var(--gold);
+        padding: 20px 22px 18px;
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-size: 22px;
+        letter-spacing: 0.16em;
+        color: var(--gold);
+      }
+      .tag {
+        margin: 0 0 16px;
+        color: var(--cyan);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+      }
+      label { display: block; font-size: 11px; color: var(--line); margin: 10px 0 4px; }
+      input[type="text"] {
+        width: 100%;
+        background: #0c1428;
+        border: 1px solid var(--line);
+        color: var(--text);
+        padding: 8px 10px;
+        font: inherit;
+      }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+      button, .bind {
+        background: #121a32;
+        color: var(--text);
+        border: 1px solid var(--gold);
+        padding: 10px 12px;
+        font: inherit;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        flex: 1 1 140px;
+      }
+      button:active { background: #243056; }
+      .toggles { margin-top: 14px; font-size: 12px; color: var(--line); }
+      .toggles label { display: flex; gap: 8px; align-items: center; margin: 6px 0; color: var(--text); }
+      #link-status {
+        position: absolute;
+        left: 12px;
+        bottom: 8px;
+        z-index: 6;
+        font-size: 11px;
+        color: var(--cyan);
+        letter-spacing: 0.12em;
+      }
+      #touch-hud {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        pointer-events: none;
+      }
+      #touch-hud .zone { pointer-events: auto; }
+      #steer-wrap {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 18px;
+      }
+      #steer-slider {
+        width: 100%;
+        height: 36px;
+      }
+      .vkeys {
+        position: absolute;
+        right: 12px;
+        bottom: 70px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 110px;
+      }
+      .vkeys button {
+        height: 52px;
+        flex: none;
+        background: rgba(18, 26, 50, 0.85);
+      }
+      #touch-drift {
+        position: absolute;
+        left: 12px;
+        bottom: 70px;
+        width: 110px;
+        height: 52px;
+        background: rgba(18, 26, 50, 0.85);
+      }
+      @media (min-width: 900px) {
+        #touch-hud { opacity: 0.35; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="race-canvas" aria-label="Race view"></canvas>
+
+    <div id="main-menu" class="overlay">
+      <div class="sheet">
+        <h1>KARTING GP</h1>
+        <p class="tag">F1 2002 ARCADE INTERFACE</p>
+        <label for="player-name">CALLSIGN</label>
+        <input id="player-name" type="text" maxlength="16" value="DRIVER" autocomplete="off" />
+        <label for="pin-input">JOIN PIN</label>
+        <input id="pin-input" type="text" maxlength="6" inputmode="numeric" placeholder="739214" autocomplete="off" />
+        <div class="row">
+          <button id="btn-quick-race" type="button">QUICK RACE</button>
+          <button id="btn-time-trial" type="button">TIME TRIAL</button>
+          <button id="btn-join" type="button">JOIN ROOM</button>
+        </div>
+        <div class="toggles">
+          <label><input id="sound-toggle" type="checkbox" checked /> ENGINE / SFX</label>
+          <label><input id="melody-toggle" type="checkbox" checked /> RETRO MELODY LOOP</label>
+        </div>
+        <p class="tag" style="margin-top:16px">CONTROL BINDINGS</p>
+        <div class="row">
+          <button class="bind" id="bind-throttle" type="button">Throttle</button>
+          <button class="bind" id="bind-brake" type="button">Brake</button>
+          <button class="bind" id="bind-steerLeft" type="button">Steer Left</button>
+          <button class="bind" id="bind-steerRight" type="button">Steer Right</button>
+          <button class="bind" id="bind-drift" type="button">Drift</button>
+        </div>
+        <p class="tag">WASD / ARROWS + SPACE DRIFT · TOUCH HUD ON MOBILE</p>
+      </div>
+    </div>
+
+    <div id="lobby-overlay" class="overlay" hidden>
+      <div class="sheet">
+        <h1>GRID</h1>
+        <p class="tag">WAITING FOR GREEN</p>
+        <p>PIN <span id="join-code">------</span></p>
+        <div class="row">
+          <button id="btn-leave" type="button">LEAVE</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="touch-hud" hidden>
+      <button id="touch-drift" class="zone" type="button">DRIFT</button>
+      <div class="vkeys">
+        <button id="touch-gas" class="zone" type="button">GAS</button>
+        <button id="touch-brake" class="zone" type="button">BRAKE</button>
+      </div>
+      <div id="steer-wrap" class="zone">
+        <input id="steer-slider" type="range" min="-1" max="1" step="0.02" value="0" aria-label="Steer" />
+      </div>
+    </div>
+
+    <div id="link-status">LINK IDLE</div>
+    <script src="/bundle.js"></script>
+  </body>
+</html>

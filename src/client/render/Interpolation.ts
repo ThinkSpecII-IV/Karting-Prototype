@@ -55,7 +55,7 @@ export class InterpolationBuffer {
       s1 = s0;
     }
 
-    if (s0 === s1) {
+    if (!s1 || s0 === s1) {
       return s0;
     }
 

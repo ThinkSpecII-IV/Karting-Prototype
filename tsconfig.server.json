@@ -19,6 +19,7 @@
     "src/track/**/*.ts",
     "src/race/**/*.ts",
     "src/network/**/*.ts",
+    "src/server/**/*.ts",
     "src/shared/**/*.ts",
     "src/ai/**/*.ts"
   ],
