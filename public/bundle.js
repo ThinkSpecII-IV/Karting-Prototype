@@ -3722,11 +3722,175 @@
   var TACH_MAX_ANGLE = 140 * Math.PI / 180;
   var TIRE_IDLE_C = 72;
   var TIRE_MAX_C = 130;
+  var drawRearWing = (ctx, palette) => {
+    ctx.fillStyle = palette.dark;
+    ctx.fillRect(-22, -12, 4, 24);
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(-21, -13, 3, 26);
+    ctx.fillStyle = palette.dark;
+    ctx.fillRect(-18, -10, 4, 20);
+  };
+  var drawRearSlicks = (ctx) => {
+    ctx.fillStyle = "#101116";
+    for (const y of [-12, 7]) {
+      ctx.fillRect(-15, y, 9, 5);
+      ctx.strokeStyle = "#454951";
+      ctx.lineWidth = 0.8;
+      ctx.strokeRect(-15, y, 9, 5);
+    }
+  };
+  var drawSweptChassis = (ctx, palette) => {
+    ctx.beginPath();
+    ctx.moveTo(23, 0);
+    ctx.lineTo(17, -4);
+    ctx.bezierCurveTo(11, -7, 8, -8, 1, -8);
+    ctx.lineTo(-12, -7);
+    ctx.lineTo(-19, -4);
+    ctx.lineTo(-19, 4);
+    ctx.lineTo(-12, 7);
+    ctx.lineTo(1, 8);
+    ctx.bezierCurveTo(8, 8, 11, 7, 17, 4);
+    ctx.closePath();
+    ctx.fillStyle = palette.body;
+    ctx.fill();
+    ctx.strokeStyle = palette.dark;
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+  };
+  var drawFerrariLivery = (ctx, palette) => {
+    ctx.fillStyle = palette.accent;
+    ctx.beginPath();
+    ctx.moveTo(21, 0);
+    ctx.lineTo(12, -2);
+    ctx.lineTo(-16, -2.5);
+    ctx.lineTo(-18, 0);
+    ctx.lineTo(-16, 2.5);
+    ctx.lineTo(12, 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#f4f0e8";
+    ctx.fillRect(-7, -1, 5, 2);
+  };
+  var drawWilliamsLivery = (ctx, palette) => {
+    ctx.fillStyle = palette.accent;
+    ctx.beginPath();
+    ctx.moveTo(18, 0);
+    ctx.lineTo(9, -2.2);
+    ctx.lineTo(-15, -3.5);
+    ctx.lineTo(-18, -1.7);
+    ctx.lineTo(-18, 1.7);
+    ctx.lineTo(-15, 3.5);
+    ctx.lineTo(9, 2.2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = palette.secondary;
+    ctx.fillRect(-9, -6, 13, 2);
+    ctx.fillRect(-9, 4, 13, 2);
+  };
+  var drawMcLarenLivery = (ctx, palette) => {
+    ctx.fillStyle = palette.accent;
+    ctx.beginPath();
+    ctx.moveTo(20, 0);
+    ctx.lineTo(13, -2);
+    ctx.lineTo(-16, -3);
+    ctx.lineTo(-19, 0);
+    ctx.lineTo(-16, 3);
+    ctx.lineTo(13, 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = palette.secondary;
+    ctx.fillRect(-13, -1, 8, 2);
+  };
+  var drawCockpit = (ctx, palette) => {
+    ctx.fillStyle = palette.cockpit;
+    ctx.beginPath();
+    ctx.ellipse(1, 0, 6.2, 3.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = palette.dark;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  };
+  var drawCockpitHalo = (ctx, palette) => {
+    ctx.strokeStyle = palette.secondary;
+    ctx.lineWidth = 1.7;
+    ctx.beginPath();
+    ctx.ellipse(1, 0, 8, 4.5, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(1, -4.3);
+    ctx.lineTo(1, 4.3);
+    ctx.stroke();
+  };
+  var drawFrontWing = (ctx, palette) => {
+    ctx.fillStyle = palette.dark;
+    ctx.fillRect(16, -13, 3, 26);
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(19, -15, 2, 30);
+    ctx.fillStyle = palette.secondary;
+    ctx.fillRect(21, -12, 2, 24);
+    ctx.fillStyle = palette.dark;
+    ctx.fillRect(16, -15, 7, 2);
+    ctx.fillRect(16, 13, 7, 2);
+  };
+  var TEAM_SPRITE_PASSES = {
+    "Ferrari F2002": {
+      palette: {
+        body: "#d71920",
+        accent: "#f2c230",
+        secondary: "#f4f0e8",
+        dark: "#42090e",
+        cockpit: "#171c26"
+      },
+      passes: [
+        drawRearWing,
+        drawRearSlicks,
+        drawSweptChassis,
+        drawFerrariLivery,
+        drawCockpit,
+        drawCockpitHalo,
+        drawFrontWing
+      ]
+    },
+    "Williams FW24": {
+      palette: {
+        body: "#1763b3",
+        accent: "#f4f6fb",
+        secondary: "#17376f",
+        dark: "#081c3a",
+        cockpit: "#151c28"
+      },
+      passes: [
+        drawRearWing,
+        drawRearSlicks,
+        drawSweptChassis,
+        drawWilliamsLivery,
+        drawCockpit,
+        drawCockpitHalo,
+        drawFrontWing
+      ]
+    },
+    "McLaren MP4-17": {
+      palette: {
+        body: "#aeb4bc",
+        accent: "#e8edf2",
+        secondary: "#f07a24",
+        dark: "#343941",
+        cockpit: "#151b25"
+      },
+      passes: [
+        drawRearWing,
+        drawRearSlicks,
+        drawSweptChassis,
+        drawMcLarenLivery,
+        drawCockpit,
+        drawCockpitHalo,
+        drawFrontWing
+      ]
+    }
+  };
   var COL = {
     void: "#050814",
     asphalt: "#1a2233",
-    kart: "#d4d8e0",
-    localKart: "#e8c31a",
     hudPanel: "rgba(4, 10, 28, 0.82)",
     hudStroke: "#8a9bb8",
     gold: "#f0c400",
@@ -3897,16 +4061,15 @@
       ctx.save();
       ctx.translate(screen.x, screen.y);
       ctx.rotate(-next);
-      const isLocal = vehicle.id === this.view.localPlayerId;
-      ctx.fillStyle = isLocal ? COL.localKart : COL.kart;
-      ctx.strokeStyle = vehicle.isDrifting ? COL.red : COL.hudStroke;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.rect(-10, -6, 20, 12);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = COL.cyan;
-      ctx.fillRect(6, -3, 5, 6);
+      const sprite = TEAM_SPRITE_PASSES[vehicle.carModel];
+      for (const pass of sprite.passes) {
+        pass(ctx, sprite.palette);
+      }
+      if (vehicle.isDrifting) {
+        ctx.strokeStyle = COL.red;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(-15, -16, 38, 32);
+      }
       ctx.restore();
     }
     drawHud(now, dtSec, local, snapshot, width, height) {
@@ -4133,6 +4296,7 @@
         interpolatedVehicles.push({
           ...v0,
           // Base other properties on s0
+          carModel: v1.carModel,
           position: {
             x: lerp(v0.position.x, v1.position.x, t),
             y: lerp(v0.position.y, v1.position.y, t)
@@ -4201,6 +4365,16 @@
     RACE_ENDED: "race:ended"
   };
 
+  // src/shared/types.ts
+  var F1_2002_CAR_MODELS = [
+    "Ferrari F2002",
+    "Williams FW24",
+    "McLaren MP4-17"
+  ];
+  function isF1TeamCarModel(value2) {
+    return typeof value2 === "string" && F1_2002_CAR_MODELS.some((model) => model === value2);
+  }
+
   // src/client/client_main.ts
   var DEFAULT_BINDINGS = {
     throttle: "KeyW",
@@ -4256,6 +4430,7 @@
       this.roomId = null;
       this.screen = "menu";
       this.gameMode = "quick_race";
+      this.selectedCarModel = F1_2002_CAR_MODELS[0];
       this.raceStartedAtMs = 0;
       this.rebindTarget = null;
       this.lastInput = null;
@@ -4360,6 +4535,18 @@
       });
       this.els.melodyToggle.addEventListener("change", () => {
         this.audio.setMelodyEnabled(this.els.melodyToggle.checked);
+      });
+      if (isF1TeamCarModel(this.els.carModelSelect.value)) {
+        this.selectedCarModel = this.els.carModelSelect.value;
+      }
+      this.els.carModelSelect.addEventListener("change", () => {
+        if (!isF1TeamCarModel(this.els.carModelSelect.value)) {
+          this.els.carModelSelect.value = this.selectedCarModel;
+          return;
+        }
+        this.selectedCarModel = this.els.carModelSelect.value;
+        this.lastInput = null;
+        this.setStatus(`${this.selectedCarModel.toUpperCase()} SELECTED`);
       });
       this.paintBindButtons();
       for (const action of Object.keys(BIND_LABELS)) {
@@ -4508,6 +4695,7 @@
         throttle,
         brake,
         drift: this.held("drift") || this.pointerDrift,
+        carModel: this.selectedCarModel,
         timestamp: Date.now()
       };
     }
@@ -4524,7 +4712,7 @@
     }
     uplinkInput(input) {
       const prev2 = this.lastInput;
-      const changed = !prev2 || prev2.steering !== input.steering || prev2.throttle !== input.throttle || prev2.brake !== input.brake || prev2.drift !== input.drift;
+      const changed = !prev2 || prev2.steering !== input.steering || prev2.throttle !== input.throttle || prev2.brake !== input.brake || prev2.drift !== input.drift || prev2.carModel !== input.carModel;
       if (!changed) {
         return;
       }
@@ -4575,6 +4763,7 @@
           joinCode: byId("join-code"),
           playerName: byId("player-name"),
           pinInput: byId("pin-input"),
+          carModelSelect: byId("car-model-select"),
           soundToggle: byId("sound-toggle"),
           melodyToggle: byId("melody-toggle"),
           steerSlider: byId("steer-slider")

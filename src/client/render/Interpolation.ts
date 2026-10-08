@@ -85,6 +85,7 @@ export class InterpolationBuffer {
 
       interpolatedVehicles.push({
         ...v0, // Base other properties on s0
+        carModel: v1.carModel,
         position: {
           x: lerp(v0.position.x, v1.position.x, t),
           y: lerp(v0.position.y, v1.position.y, t)

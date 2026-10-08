@@ -11,7 +11,7 @@ import {
   ENGINE_OVERHEAT_THRESHOLD,
   MAX_SPEED_MS,
 } from "../../shared/constants.js";
-import type { Snapshot, SnapshotVehicle, Vec2 } from "../../shared/types.js";
+import type { F1TeamCarModel, Snapshot, SnapshotVehicle, Vec2 } from "../../shared/types.js";
 import { clamp, clamp01, lerp, lerpAngle, radToDeg } from "../../math/MathUtils.js";
 
 export type GameMode = "quick_race" | "time_trial";
@@ -38,11 +38,186 @@ const TACH_MAX_ANGLE = (140 * Math.PI) / 180;
 const TIRE_IDLE_C = 72;
 const TIRE_MAX_C = 130;
 
+// === F1 2002 TEAM SPRITE ENGINE ===
+interface TeamPalette {
+  readonly body: string;
+  readonly accent: string;
+  readonly secondary: string;
+  readonly dark: string;
+  readonly cockpit: string;
+}
+
+type SpriteDrawPass = (ctx: CanvasRenderingContext2D, palette: TeamPalette) => void;
+
+interface TeamSpriteDefinition {
+  readonly palette: TeamPalette;
+  readonly passes: readonly SpriteDrawPass[];
+}
+
+const drawRearWing: SpriteDrawPass = (ctx, palette) => {
+  ctx.fillStyle = palette.dark;
+  ctx.fillRect(-22, -12, 4, 24);
+  ctx.fillStyle = palette.accent;
+  ctx.fillRect(-21, -13, 3, 26);
+  ctx.fillStyle = palette.dark;
+  ctx.fillRect(-18, -10, 4, 20);
+};
+
+const drawRearSlicks: SpriteDrawPass = (ctx) => {
+  ctx.fillStyle = "#101116";
+  for (const y of [-12, 7]) {
+    ctx.fillRect(-15, y, 9, 5);
+    ctx.strokeStyle = "#454951";
+    ctx.lineWidth = 0.8;
+    ctx.strokeRect(-15, y, 9, 5);
+  }
+};
+
+const drawSweptChassis: SpriteDrawPass = (ctx, palette) => {
+  ctx.beginPath();
+  ctx.moveTo(23, 0);
+  ctx.lineTo(17, -4);
+  ctx.bezierCurveTo(11, -7, 8, -8, 1, -8);
+  ctx.lineTo(-12, -7);
+  ctx.lineTo(-19, -4);
+  ctx.lineTo(-19, 4);
+  ctx.lineTo(-12, 7);
+  ctx.lineTo(1, 8);
+  ctx.bezierCurveTo(8, 8, 11, 7, 17, 4);
+  ctx.closePath();
+  ctx.fillStyle = palette.body;
+  ctx.fill();
+  ctx.strokeStyle = palette.dark;
+  ctx.lineWidth = 1.4;
+  ctx.stroke();
+};
+
+const drawFerrariLivery: SpriteDrawPass = (ctx, palette) => {
+  ctx.fillStyle = palette.accent;
+  ctx.beginPath();
+  ctx.moveTo(21, 0);
+  ctx.lineTo(12, -2);
+  ctx.lineTo(-16, -2.5);
+  ctx.lineTo(-18, 0);
+  ctx.lineTo(-16, 2.5);
+  ctx.lineTo(12, 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "#f4f0e8";
+  ctx.fillRect(-7, -1, 5, 2);
+};
+
+const drawWilliamsLivery: SpriteDrawPass = (ctx, palette) => {
+  ctx.fillStyle = palette.accent;
+  ctx.beginPath();
+  ctx.moveTo(18, 0);
+  ctx.lineTo(9, -2.2);
+  ctx.lineTo(-15, -3.5);
+  ctx.lineTo(-18, -1.7);
+  ctx.lineTo(-18, 1.7);
+  ctx.lineTo(-15, 3.5);
+  ctx.lineTo(9, 2.2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = palette.secondary;
+  ctx.fillRect(-9, -6, 13, 2);
+  ctx.fillRect(-9, 4, 13, 2);
+};
+
+const drawMcLarenLivery: SpriteDrawPass = (ctx, palette) => {
+  ctx.fillStyle = palette.accent;
+  ctx.beginPath();
+  ctx.moveTo(20, 0);
+  ctx.lineTo(13, -2);
+  ctx.lineTo(-16, -3);
+  ctx.lineTo(-19, 0);
+  ctx.lineTo(-16, 3);
+  ctx.lineTo(13, 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = palette.secondary;
+  ctx.fillRect(-13, -1, 8, 2);
+};
+
+const drawCockpit: SpriteDrawPass = (ctx, palette) => {
+  ctx.fillStyle = palette.cockpit;
+  ctx.beginPath();
+  ctx.ellipse(1, 0, 6.2, 3.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = palette.dark;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+};
+
+const drawCockpitHalo: SpriteDrawPass = (ctx, palette) => {
+  ctx.strokeStyle = palette.secondary;
+  ctx.lineWidth = 1.7;
+  ctx.beginPath();
+  ctx.ellipse(1, 0, 8, 4.5, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(1, -4.3);
+  ctx.lineTo(1, 4.3);
+  ctx.stroke();
+};
+
+const drawFrontWing: SpriteDrawPass = (ctx, palette) => {
+  ctx.fillStyle = palette.dark;
+  ctx.fillRect(16, -13, 3, 26);
+  ctx.fillStyle = palette.accent;
+  ctx.fillRect(19, -15, 2, 30);
+  ctx.fillStyle = palette.secondary;
+  ctx.fillRect(21, -12, 2, 24);
+  ctx.fillStyle = palette.dark;
+  ctx.fillRect(16, -15, 7, 2);
+  ctx.fillRect(16, 13, 7, 2);
+};
+
+const TEAM_SPRITE_PASSES: Readonly<Record<F1TeamCarModel, TeamSpriteDefinition>> = {
+  "Ferrari F2002": {
+    palette: {
+      body: "#d71920",
+      accent: "#f2c230",
+      secondary: "#f4f0e8",
+      dark: "#42090e",
+      cockpit: "#171c26",
+    },
+    passes: [
+      drawRearWing, drawRearSlicks, drawSweptChassis, drawFerrariLivery,
+      drawCockpit, drawCockpitHalo, drawFrontWing,
+    ],
+  },
+  "Williams FW24": {
+    palette: {
+      body: "#1763b3",
+      accent: "#f4f6fb",
+      secondary: "#17376f",
+      dark: "#081c3a",
+      cockpit: "#151c28",
+    },
+    passes: [
+      drawRearWing, drawRearSlicks, drawSweptChassis, drawWilliamsLivery,
+      drawCockpit, drawCockpitHalo, drawFrontWing,
+    ],
+  },
+  "McLaren MP4-17": {
+    palette: {
+      body: "#aeb4bc",
+      accent: "#e8edf2",
+      secondary: "#f07a24",
+      dark: "#343941",
+      cockpit: "#151b25",
+    },
+    passes: [
+      drawRearWing, drawRearSlicks, drawSweptChassis, drawMcLarenLivery,
+      drawCockpit, drawCockpitHalo, drawFrontWing,
+    ],
+  },
+};
+
 const COL = {
   void: "#050814",
   asphalt: "#1a2233",
-  kart: "#d4d8e0",
-  localKart: "#e8c31a",
   hudPanel: "rgba(4, 10, 28, 0.82)",
   hudStroke: "#8a9bb8",
   gold: "#f0c400",
@@ -242,16 +417,15 @@ export class CanvasRenderer {
     ctx.translate(screen.x, screen.y);
     // Canvas Y is down; world angles are CCW from +X, so negate for screen.
     ctx.rotate(-next);
-    const isLocal = vehicle.id === this.view.localPlayerId;
-    ctx.fillStyle = isLocal ? COL.localKart : COL.kart;
-    ctx.strokeStyle = vehicle.isDrifting ? COL.red : COL.hudStroke;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.rect(-10, -6, 20, 12);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = COL.cyan;
-    ctx.fillRect(6, -3, 5, 6);
+    const sprite = TEAM_SPRITE_PASSES[vehicle.carModel];
+    for (const pass of sprite.passes) {
+      pass(ctx, sprite.palette);
+    }
+    if (vehicle.isDrifting) {
+      ctx.strokeStyle = COL.red;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(-15, -16, 38, 32);
+    }
     ctx.restore();
   }
 

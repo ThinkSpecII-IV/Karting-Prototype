@@ -44,6 +44,8 @@
       .overlay[hidden], #touch-hud[hidden] { display: none !important; }
       .sheet {
         width: min(460px, calc(100vw - 24px));
+        max-height: calc(100vh - 24px);
+        overflow-y: auto;
         background: var(--panel);
         border: 2px solid var(--gold);
         padding: 20px 22px 18px;
@@ -61,7 +63,7 @@
         letter-spacing: 0.18em;
       }
       label { display: block; font-size: 11px; color: var(--line); margin: 10px 0 4px; }
-      input[type="text"] {
+      input[type="text"], select {
         width: 100%;
         background: #0c1428;
         border: 1px solid var(--line);
@@ -69,6 +71,7 @@
         padding: 8px 10px;
         font: inherit;
       }
+      select { cursor: pointer; }
       .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
       button, .bind {
         background: #121a32;
@@ -152,6 +155,13 @@
           <button id="btn-time-trial" type="button">TIME TRIAL</button>
           <button id="btn-join" type="button">JOIN ROOM</button>
         </div>
+        <!-- === F1 2002 TEAM SPRITE ENGINE === -->
+        <label for="car-model-select">F1 2002 TEAM CAR</label>
+        <select id="car-model-select" aria-label="Select F1 2002 team car">
+          <option value="Ferrari F2002">Ferrari F2002 — Scarlet Red</option>
+          <option value="Williams FW24">Williams FW24 — Blue / White</option>
+          <option value="McLaren MP4-17">McLaren MP4-17 — Silver / Grey</option>
+        </select>
         <div class="toggles">
           <label><input id="sound-toggle" type="checkbox" checked /> ENGINE / SFX</label>
           <label><input id="melody-toggle" type="checkbox" checked /> RETRO MELODY LOOP</label>

@@ -17,7 +17,13 @@ import {
   type ClientToServerEvents,
   type ServerToClientEvents,
 } from "../shared/events.js";
-import type { PlayerInput, Snapshot } from "../shared/types.js";
+import {
+  F1_2002_CAR_MODELS,
+  isF1TeamCarModel,
+  type F1TeamCarModel,
+  type PlayerInput,
+  type Snapshot,
+} from "../shared/types.js";
 import { clamp, deadZone } from "../math/MathUtils.js";
 
 type UiScreen = "menu" | "lobby" | "race";
@@ -63,11 +69,13 @@ interface ClientElements {
   joinCode: HTMLElement;
   playerName: HTMLInputElement;
   pinInput: HTMLInputElement;
+  carModelSelect: HTMLSelectElement;
   soundToggle: HTMLInputElement;
   melodyToggle: HTMLInputElement;
   steerSlider: HTMLInputElement;
 }
 
+// === F1 2002 TEAM SPRITE ENGINE ===
 function byId<T extends HTMLElement>(id: string): T {
   const el = document.getElementById(id);
   if (!el) {
@@ -107,6 +115,7 @@ export class ClientMain {
   private roomId: string | null = null;
   private screen: UiScreen = "menu";
   private gameMode: GameMode = "quick_race";
+  private selectedCarModel: F1TeamCarModel = F1_2002_CAR_MODELS[0];
   private raceStartedAtMs = 0;
   private rebindTarget: BindAction | null = null;
   private lastInput: PlayerInput | null = null;
@@ -219,6 +228,18 @@ export class ClientMain {
     });
     this.els.melodyToggle.addEventListener("change", () => {
       this.audio.setMelodyEnabled(this.els.melodyToggle.checked);
+    });
+    if (isF1TeamCarModel(this.els.carModelSelect.value)) {
+      this.selectedCarModel = this.els.carModelSelect.value;
+    }
+    this.els.carModelSelect.addEventListener("change", () => {
+      if (!isF1TeamCarModel(this.els.carModelSelect.value)) {
+        this.els.carModelSelect.value = this.selectedCarModel;
+        return;
+      }
+      this.selectedCarModel = this.els.carModelSelect.value;
+      this.lastInput = null;
+      this.setStatus(`${this.selectedCarModel.toUpperCase()} SELECTED`);
     });
     this.paintBindButtons();
     for (const action of Object.keys(BIND_LABELS) as BindAction[]) {
@@ -379,6 +400,7 @@ export class ClientMain {
       throttle,
       brake,
       drift: this.held("drift") || this.pointerDrift,
+      carModel: this.selectedCarModel,
       timestamp: Date.now(),
     };
   }
@@ -402,7 +424,8 @@ export class ClientMain {
       prev.steering !== input.steering ||
       prev.throttle !== input.throttle ||
       prev.brake !== input.brake ||
-      prev.drift !== input.drift;
+      prev.drift !== input.drift ||
+      prev.carModel !== input.carModel;
     if (!changed) {
       return;
     }
@@ -460,6 +483,7 @@ function boot(): void {
         joinCode: byId("join-code"),
         playerName: byId<HTMLInputElement>("player-name"),
         pinInput: byId<HTMLInputElement>("pin-input"),
+        carModelSelect: byId<HTMLSelectElement>("car-model-select"),
         soundToggle: byId<HTMLInputElement>("sound-toggle"),
         melodyToggle: byId<HTMLInputElement>("melody-toggle"),
         steerSlider: byId<HTMLInputElement>("steer-slider"),

@@ -34,6 +34,19 @@ export interface LineSegment {
 // Vehicle
 // ---------------------------------------------------------------------------
 
+export const F1_2002_CAR_MODELS = [
+  "Ferrari F2002",
+  "Williams FW24",
+  "McLaren MP4-17",
+] as const;
+
+export type F1TeamCarModel = (typeof F1_2002_CAR_MODELS)[number];
+
+export function isF1TeamCarModel(value: unknown): value is F1TeamCarModel {
+  return typeof value === "string" &&
+    F1_2002_CAR_MODELS.some((model) => model === value);
+}
+
 /**
  * Immutable characteristics of a kart model.
  * Loaded once at race start; never mutated during a race.
@@ -131,6 +144,9 @@ export interface VehicleState {
   /** Matches the player's socket/player ID. */
   readonly id: string;
 
+  /** Selected F1 2002 team car, replicated to every client in the race. */
+  carModel: F1TeamCarModel;
+
   /** World-space position in metres. */
   position: Vec2;
 
@@ -212,6 +228,8 @@ export interface PlayerInput {
   readonly brake: number;
   /** Drift button state. */
   readonly drift: boolean;
+  /** Selected team car; carried with controls to update the networked sprite. */
+  readonly carModel: F1TeamCarModel;
   /**
    * Client-side timestamp (ms, from Date.now()) when input was captured.
    * Used for latency measurement only; never used to override server physics.
@@ -320,6 +338,7 @@ export interface Snapshot {
  */
 export interface SnapshotVehicle {
   readonly id: string;
+  readonly carModel: F1TeamCarModel;
   readonly position: Vec2;
   readonly rotation: number;
   readonly velocity: Vec2;

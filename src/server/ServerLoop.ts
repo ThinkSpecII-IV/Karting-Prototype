@@ -10,6 +10,7 @@ import {
   DEFAULT_KART_CONFIG,
 } from "../physics/KartPhysics.js";
 import { resolveSphereCollision } from "../physics/BoundingSphere.js";
+import { isF1TeamCarModel } from "../shared/types.js";
 import type {
   RaceState,
   PlayerInput,
@@ -98,6 +99,9 @@ export class ServerLoop {
           vehicle.brake = input.brake;
           vehicle.steering = input.steering;
           vehicle.isDriftInput = input.drift;
+          if (isF1TeamCarModel(input.carModel)) {
+            vehicle.carModel = input.carModel;
+          }
         }
 
         const surfaceGrip = resolveSurfaceGrip(
@@ -148,6 +152,7 @@ export class ServerLoop {
   private broadcastSnapshot(roomId: string, raceState: RaceState) {
     const snapshotVehicles: SnapshotVehicle[] = raceState.vehicles.map((v) => ({
       id: v.id,
+      carModel: v.carModel,
       position: { ...v.position },
       rotation: v.rotation,
       velocity: { ...v.velocity },

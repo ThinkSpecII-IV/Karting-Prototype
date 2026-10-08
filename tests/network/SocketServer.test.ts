@@ -73,6 +73,7 @@ describe("SocketServer", () => {
           throttle: 1.0,
           brake: 0,
           drift: false,
+          carModel: "McLaren MP4-17",
           timestamp: Date.now(),
         };
         clientSocket.emit(ClientEvents.PLAYER_INPUT, input);
@@ -82,6 +83,7 @@ describe("SocketServer", () => {
         expect(snapshot).toBeDefined();
         expect(snapshot.vehicles).toBeDefined();
         expect(snapshot.vehicles.length).toBe(1);
+        expect(snapshot.vehicles[0]?.carModel).toBe("McLaren MP4-17");
         resolve();
       });
     });

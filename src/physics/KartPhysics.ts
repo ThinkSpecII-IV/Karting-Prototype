@@ -302,6 +302,7 @@ export function createDefaultVehicleState(
 ): VehicleState {
   return {
     id,
+    carModel: "Ferrari F2002",
     position: { x, y },
     rotation,
     velocity: { x: 0, y: 0 },
