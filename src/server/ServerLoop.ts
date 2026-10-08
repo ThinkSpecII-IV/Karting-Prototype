@@ -4,6 +4,7 @@ import {
   TICKS_PER_SNAPSHOT,
   MAX_PHYSICS_STEPS,
 } from "../shared/constants.js";
+import { performance } from "node:perf_hooks";
 import {
   integrate,
   applyUpdate,
@@ -26,6 +27,11 @@ export class ServerLoop {
   private accumulator = 0;
   private intervalId: NodeJS.Timeout | null = null;
   private broadcastCallback: (roomId: string, snapshot: Snapshot) => void;
+  private readonly metricsEnabled = process.env.SERVER_METRICS === "1";
+  private metricsWindowStart = performance.now();
+  private metricsCpuBaseline = process.cpuUsage();
+  private maxTickDurationMs = 0;
+  private snapshotBroadcastCount = 0;
 
   constructor(broadcastCallback: (roomId: string, snapshot: Snapshot) => void) {
     this.broadcastCallback = broadcastCallback;
@@ -61,6 +67,7 @@ export class ServerLoop {
   }
 
   private tick() {
+    const tickStartedAt = this.metricsEnabled ? performance.now() : 0;
     const now = Date.now();
     let frameTime = (now - this.previousTimeMs) / 1000.0;
     this.previousTimeMs = now;
@@ -75,6 +82,12 @@ export class ServerLoop {
     while (this.accumulator >= PHYSICS_DT) {
       this.stepPhysics(PHYSICS_DT);
       this.accumulator -= PHYSICS_DT;
+    }
+
+    if (this.metricsEnabled) {
+      const tickDurationMs = performance.now() - tickStartedAt;
+      this.maxTickDurationMs = Math.max(this.maxTickDurationMs, tickDurationMs);
+      this.emitMetricsIfDue(performance.now());
     }
   }
 
@@ -177,5 +190,32 @@ export class ServerLoop {
     };
 
     this.broadcastCallback(roomId, snapshot);
+    if (this.metricsEnabled) {
+      this.snapshotBroadcastCount += 1;
+    }
+  }
+
+  private emitMetricsIfDue(now: number) {
+    const elapsedMs = now - this.metricsWindowStart;
+    if (elapsedMs < 1_000) return;
+
+    const cpuUsage = process.cpuUsage(this.metricsCpuBaseline);
+    const memoryUsage = process.memoryUsage();
+    const cpuPercent = ((cpuUsage.user + cpuUsage.system) / 1_000 / elapsedMs) * 100;
+
+    process.stdout.write(
+      `SERVER_METRIC ${JSON.stringify({
+        maxTickDurationMs: this.maxTickDurationMs,
+        snapshotBroadcastsPerSecond: (this.snapshotBroadcastCount * 1_000) / elapsedMs,
+        cpuPercent,
+        rssBytes: memoryUsage.rss,
+        heapUsedBytes: memoryUsage.heapUsed,
+      })}\n`
+    );
+
+    this.metricsWindowStart = now;
+    this.metricsCpuBaseline = process.cpuUsage();
+    this.maxTickDurationMs = 0;
+    this.snapshotBroadcastCount = 0;
   }
 }
