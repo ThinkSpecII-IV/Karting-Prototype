@@ -1,5 +1,11 @@
 # Implementation Plan — Multiplayer Kart Racing Game
 
+> Historical planning document. The original phase list predates the current
+> implementation and describes several modules that have since been organized
+> differently. For verified repository state and the next proposed work, see
+> [PROJECT_STATE.md](./PROJECT_STATE.md), [ARCHITECTURE.md](./ARCHITECTURE.md),
+> and [DEVELOPMENT_PLAN.md](./DEVELOPMENT_PLAN.md).
+
 > Each phase is independently verifiable. Complete and test each phase before starting the next.
 > Commit after every phase with a descriptive message.
 > Use proxy/placeholder assets and headless simulation until Phase 10.

@@ -135,8 +135,8 @@ export class ClientMain {
     this.bindKeyboard();
     this.bindTouch();
     this.connectSocket();
-    this.renderer.setFrameHook((nowMs) => {
-      this.onAnimationFrame(nowMs);
+    this.renderer.setFrameHook(() => {
+      this.onAnimationFrame();
     });
     this.renderer.start();
     this.showScreen("menu");
@@ -363,7 +363,7 @@ export class ClientMain {
     return value.length > 0 ? value.slice(0, 16) : "DRIVER";
   }
 
-  private onAnimationFrame(nowMs: number): void {
+  private onAnimationFrame(): void {
     if (this.destroyed) {
       return;
     }
@@ -373,7 +373,7 @@ export class ClientMain {
       localPlayerId: this.localPlayerId,
       raceStartedAtMs: this.raceStartedAtMs,
       gameMode: this.gameMode,
-      nowMs,
+      nowMs: Date.now(),
     });
     const local = snapshot?.vehicles.find((v) => v.id === this.localPlayerId) ?? snapshot?.vehicles[0];
     const speed = local ? Math.hypot(local.velocity.x, local.velocity.y) : 0;

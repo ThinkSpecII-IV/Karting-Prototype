@@ -5,6 +5,7 @@ import { ServerLoop } from "../ServerLoop.js";
 import { ClientEvents, ServerEvents, RoomCreatePayload, RoomJoinPayload, PlayerReadyPayload, PlayerInput } from "../../shared/events.js";
 import type { RaceState, VehicleState } from "../../shared/types.js";
 import { createDefaultVehicleState } from "../../physics/KartPhysics.js";
+import { DEFAULT_TRACK } from "../../track/defaultTrack.js";
 
 export class SocketServer {
   private io: IOServer;
@@ -132,9 +133,16 @@ export class SocketServer {
     
     this.roomManager.setRoomPhase(roomId, "RACING");
 
-    const vehicles: VehicleState[] = room.players.map((p, index) => 
-      createDefaultVehicleState(p.id, index * 2, 0, 0)
-    );
+    const vehicles: VehicleState[] = room.players.map((player, index) => {
+      const spawn = DEFAULT_TRACK.spawnPoints[index % DEFAULT_TRACK.spawnPoints.length]!;
+      const vehicle = createDefaultVehicleState(
+        player.id,
+        spawn.position.x,
+        spawn.position.y,
+        spawn.rotation
+      );
+      return vehicle;
+    });
 
     const raceState: RaceState = {
       tick: 0,
@@ -153,7 +161,7 @@ export class SocketServer {
       countdown: 0,
     };
 
-    this.serverLoop.addRace(roomId, raceState);
+    this.serverLoop.addRace(roomId, raceState, DEFAULT_TRACK.boundaries);
     this.io.to(roomId).emit(ServerEvents.RACE_STARTED, { roomId, startedAt: Date.now() });
   }
 }

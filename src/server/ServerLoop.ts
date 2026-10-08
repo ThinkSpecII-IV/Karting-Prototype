@@ -10,19 +10,22 @@ import {
   applyUpdate,
   DEFAULT_KART_CONFIG,
 } from "../physics/KartPhysics.js";
-import { resolveSphereCollision } from "../physics/BoundingSphere.js";
+import { resolveSphereCollision, resolveWallCollisions } from "../physics/BoundingSphere.js";
 import { isF1TeamCarModel } from "../shared/types.js";
 import type {
+  LineSegment,
   RaceState,
   PlayerInput,
   Snapshot,
   SnapshotVehicle,
 } from "../shared/types.js";
 import { resolveSurfaceGrip } from "../physics/SurfaceResponse.js";
+import { DEFAULT_TRACK } from "../track/defaultTrack.js";
 
 export class ServerLoop {
   private activeRaces = new Map<string, RaceState>();
   private inputBuffers = new Map<string, Map<string, PlayerInput>>();
+  private raceBoundaries = new Map<string, readonly LineSegment[]>();
   private previousTimeMs = Date.now();
   private accumulator = 0;
   private intervalId: NodeJS.Timeout | null = null;
@@ -49,14 +52,20 @@ export class ServerLoop {
     }
   }
 
-  addRace(roomId: string, state: RaceState) {
+  addRace(
+    roomId: string,
+    state: RaceState,
+    boundaries: readonly LineSegment[] = DEFAULT_TRACK.boundaries
+  ) {
     this.activeRaces.set(roomId, state);
     this.inputBuffers.set(roomId, new Map());
+    this.raceBoundaries.set(roomId, boundaries);
   }
 
   removeRace(roomId: string) {
     this.activeRaces.delete(roomId);
     this.inputBuffers.delete(roomId);
+    this.raceBoundaries.delete(roomId);
   }
 
   queueInput(roomId: string, playerId: string, input: PlayerInput) {
@@ -133,6 +142,15 @@ export class ServerLoop {
         );
 
         applyUpdate(vehicle, update);
+
+        const wallResult = resolveWallCollisions(
+          vehicle.position,
+          vehicle.velocity,
+          DEFAULT_KART_CONFIG.collisionRadius,
+          this.raceBoundaries.get(roomId) ?? []
+        );
+        vehicle.position = wallResult.position;
+        vehicle.velocity = wallResult.velocity;
       }
 
       // 2. Resolve Collisions (Car vs Car)

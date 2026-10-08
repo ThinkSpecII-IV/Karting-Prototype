@@ -44,9 +44,10 @@ const httpServer = createServer((req, res) => {
 });
 
 const socketServer = new SocketServer(httpServer);
+const port = Number(process.env.PORT ?? SERVER_PORT);
 
-httpServer.listen(SERVER_PORT, () => {
-  process.stdout.write(`Karting client + socket on http://127.0.0.1:${SERVER_PORT}\n`);
+httpServer.listen(port, () => {
+  process.stdout.write(`Karting client + socket on http://127.0.0.1:${port}\n`);
 });
 
 const shutdown = (): void => {

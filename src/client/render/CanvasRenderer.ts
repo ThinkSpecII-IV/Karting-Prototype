@@ -13,6 +13,7 @@ import {
 } from "../../shared/constants.js";
 import type { F1TeamCarModel, Snapshot, SnapshotVehicle, Vec2 } from "../../shared/types.js";
 import { clamp, clamp01, lerp, lerpAngle, radToDeg } from "../../math/MathUtils.js";
+import { DEFAULT_TRACK } from "../../track/defaultTrack.js";
 
 export type GameMode = "quick_race" | "time_trial";
 
@@ -286,7 +287,7 @@ export class CanvasRenderer {
         this.lastDrawMs = now;
         this.resizeToDisplay();
         this.onFrame?.(now, dtSec);
-        this.draw(now, dtSec);
+        this.draw(dtSec);
       } catch {
         /* never let a frame crash the RAF loop */
       }
@@ -344,7 +345,7 @@ export class CanvasRenderer {
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  private draw(now: number, dtSec: number): void {
+  private draw(dtSec: number): void {
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
     const ctx = this.ctx;
@@ -362,7 +363,7 @@ export class CanvasRenderer {
       }
     }
 
-    this.drawHud(now, dtSec, local, snapshot, width, height);
+    this.drawHud(this.view.nowMs, dtSec, local, snapshot, width, height);
   }
 
   private findLocal(snapshot: Snapshot | null): SnapshotVehicle | null {
@@ -381,9 +382,9 @@ export class CanvasRenderer {
 
   private drawTrackGrid(width: number, height: number, camera: Vec2): void {
     const ctx = this.ctx;
-    ctx.fillStyle = COL.asphalt;
+    ctx.fillStyle = "#173322";
     ctx.fillRect(0, 0, width, height);
-    ctx.strokeStyle = "rgba(80, 96, 128, 0.35)";
+    ctx.strokeStyle = "rgba(160, 190, 140, 0.12)";
     ctx.lineWidth = 1;
     const spacing = PIXELS_PER_METRE * 4;
     const offsetX = -((camera.x * PIXELS_PER_METRE) % spacing);
@@ -398,6 +399,47 @@ export class CanvasRenderer {
       ctx.lineTo(width, y);
     }
     ctx.stroke();
+
+    ctx.beginPath();
+    this.traceTrackPath(DEFAULT_TRACK.outerBoundary, camera, width, height);
+    this.traceTrackPath(DEFAULT_TRACK.innerBoundary, camera, width, height);
+    ctx.fillStyle = COL.asphalt;
+    ctx.fill("evenodd");
+
+    ctx.setLineDash([12, 9]);
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "#d9d9d2";
+    ctx.beginPath();
+    this.traceTrackPath(DEFAULT_TRACK.outerBoundary, camera, width, height);
+    ctx.stroke();
+    ctx.strokeStyle = "#d9d9d2";
+    ctx.beginPath();
+    this.traceTrackPath(DEFAULT_TRACK.innerBoundary, camera, width, height);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle = "rgba(225, 205, 130, 0.35)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    this.traceTrackPath(DEFAULT_TRACK.centerline, camera, width, height);
+    ctx.stroke();
+  }
+
+  private traceTrackPath(
+    points: readonly Vec2[],
+    camera: Vec2,
+    width: number,
+    height: number
+  ): void {
+    points.forEach((point, index) => {
+      const screen = this.worldToScreen(point, camera, width, height);
+      if (index === 0) {
+        this.ctx.moveTo(screen.x, screen.y);
+      } else {
+        this.ctx.lineTo(screen.x, screen.y);
+      }
+    });
+    this.ctx.closePath();
   }
 
   private drawKart(

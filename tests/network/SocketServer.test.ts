@@ -3,6 +3,7 @@ import { createServer } from "http";
 import { io as Client, Socket as ClientSocket } from "socket.io-client";
 import { SocketServer } from "../../src/server/network/SocketServer.js";
 import { ClientEvents, ServerEvents, RoomCreatePayload, PlayerInput } from "../../src/shared/events.js";
+import { DEFAULT_TRACK } from "../../src/track/defaultTrack.js";
 
 
 describe("SocketServer", () => {
@@ -84,6 +85,9 @@ describe("SocketServer", () => {
         expect(snapshot.vehicles).toBeDefined();
         expect(snapshot.vehicles.length).toBe(1);
         expect(snapshot.vehicles[0]?.carModel).toBe("McLaren MP4-17");
+        const spawn = DEFAULT_TRACK.spawnPoints[0]!.position;
+        const position = snapshot.vehicles[0]!.position;
+        expect(Math.hypot(position.x - spawn.x, position.y - spawn.y)).toBeLessThan(1);
         resolve();
       });
     });
